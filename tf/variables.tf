@@ -7,7 +7,7 @@ variable "flavor_name" {
 }
 
 variable "key_pair" {
-  default = "boeva"
+  default = "boytsova"
 }
 
 variable "security_group" {
