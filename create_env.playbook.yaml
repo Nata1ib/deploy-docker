@@ -1,0 +1,121 @@
+- name: run local terraform
+  hosts: localhost
+  connection: local
+  tasks:
+    - name: Run terraform
+      terraform:
+        project_path: "./tf"
+        force_init: yes
+        state: present
+      register: trfrm
+
+    - name: Add host
+      add_host:
+        name: w_bot
+        groups: nodes
+        ansible_host: "{{ trfrm.outputs.instance_ip_addr.value }}"
+        ansible_ssh_private_key_file: ~/.ssh/id_rsa
+        ansible_ssh_common_args: "-o StrictHostKeyChecking=no"
+
+- name: Modify properties of the db
+  hosts: localhost
+  tasks:
+    - name: Modify docker conf from template
+      ansible.builtin.template:
+        src: "{{ daemon_conf }}"
+        dest: "{{ daemon_conf | regex_replace('j2$', 'json') }}"
+
+- name: Wait for SSH port to be available
+  hosts: localhost
+  connection: local
+  tasks:
+    - name: Wait for w_bot port 22
+      wait_for:
+        host: "{{ trfrm.outputs.instance_ip_addr.value }}"
+        port: 22
+
+- name: Deploy Application with docker
+  hosts: w_bot
+  vars:
+    daemon_json: "{{ daemon_conf | regex_replace('j2$', 'json') }}"
+  tasks:
+    - name: Update apt package cache
+      apt:
+        update_cache: yes
+      become: true
+
+    - name: Install aptitude
+      apt:
+        name: aptitude
+        state: latest
+        update_cache: true
+      become: true
+
+    - name: Install required system packages
+      apt:
+        pkg:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - software-properties-common
+          - python3-pip
+          - virtualenv
+          - python3-setuptools
+        state: latest
+        update_cache: true
+      become: true
+        
+    - name: Add Docker GPG apt Key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+      become: true
+
+    - name: Add Docker Repository
+      apt_repository:
+        repo: deb https://download.docker.com/linux/ubuntu jammy stable
+        state: present
+      become: true
+
+    - name: Update apt and install docker-ce
+      apt:
+        name: docker-ce
+        state: latest
+        update_cache: true
+      become: true
+      
+    - name: Install Docker Module for Python
+      pip:
+        name: docker
+      become: true
+
+    - name: Copy directory project
+      become: yes
+      copy:
+        src: "{{ daemon_json }}"
+        dest: /etc/docker
+
+    - name: Restart Docker service
+      ansible.builtin.service:
+        name: docker
+        state: restarted
+      become: true   
+        
+    - name: Ensure project directory exists
+      file:
+        path: /home/ubuntu/project
+        state: directory
+         
+    - name: Pull Docker image
+      community.docker.docker_image:
+        name: "{{ DOCKER_REGISTRY_IP }}/w_bot/bot:latest"
+        source: pull
+      become: true   
+      
+    - name: Create container
+      community.docker.docker_container:
+        name: "bot"
+        image: "{{ DOCKER_REGISTRY_IP }}/w_bot/bot:latest"
+        state: started
+        recreate: yes
+      become: true
