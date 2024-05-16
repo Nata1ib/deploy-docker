@@ -108,14 +108,14 @@
 
     - name: Pull Docker image
       community.docker.docker_image:
-        name: "{{ DOCKER_REGISTRY_IP }}/w_bot/bot:latest"
+        name: "nataboytsova/passbot12:ourbot"
         source: pull
       become: true   
 
     - name: Create container
       community.docker.docker_container:
         name: "bot"
-        image: "{{ DOCKER_REGISTRY_IP }}/w_bot/bot:latest"
+        image: "nataboytsova/passbot12:ourbot"
         state: started
         recreate: yes
       become: true
