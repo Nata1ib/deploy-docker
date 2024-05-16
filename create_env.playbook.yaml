@@ -108,14 +108,14 @@
          
     - name: Pull Docker image
       community.docker.docker_image:
-        name: "{{ DOCKER_REGISTRY_IP }}/w_bo0t/b0ot:latest"
+        name: "{{ DOCKER_REGISTRY_IP }}/w_boot/boot:latest"
         source: pull
       become: true   
       
     - name: Create container
       community.docker.docker_container:
         name: "boot"
-        image: "{{ DOCKER_REGISTRY_IP }}/w_bo0t/b0ot:latest"
+        image: "{{ DOCKER_REGISTRY_IP }}/w_boot/boot:latest"
         state: started
         recreate: yes
       become: true
