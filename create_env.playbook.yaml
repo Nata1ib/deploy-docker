@@ -1,4 +1,4 @@
-- name: run local terraform
+ name: run local terraform
   hosts: localhost
   connection: local
   tasks:
@@ -11,7 +11,7 @@
 
     - name: Add host
       add_host:
-        name: w_bot_bn
+        name: w_bot
         groups: nodes
         ansible_host: "{{ trfrm.outputs.instance_ip_addr.value }}"
         ansible_ssh_private_key_file: ~/.ssh/id_rsa
@@ -29,13 +29,13 @@
   hosts: localhost
   connection: local
   tasks:
-    - name: Wait for w_bot_bn port 22
+    - name: Wait for w_bot port 22
       wait_for:
         host: "{{ trfrm.outputs.instance_ip_addr.value }}"
         port: 22
 
 - name: Deploy Application with docker
-  hosts: w_bot_bn
+  hosts: w_bot
   vars:
     daemon_json: "{{ daemon_conf | regex_replace('j2$', 'json') }}"
   tasks:
@@ -64,7 +64,7 @@
         state: latest
         update_cache: true
       become: true
-        
+
     - name: Add Docker GPG apt Key
       apt_key:
         url: https://download.docker.com/linux/ubuntu/gpg
@@ -83,7 +83,7 @@
         state: latest
         update_cache: true
       become: true
-      
+
     - name: Install Docker Module for Python
       pip:
         name: docker
@@ -100,22 +100,23 @@
         name: docker
         state: restarted
       become: true   
-        
+
     - name: Ensure project directory exists
       file:
         path: /home/ubuntu/project
         state: directory
-        
-    
+
     - name: Pull Docker image
-      community.general.docker_image:
-        name: "nataboytsova/passbot12:latest"
+      community.docker.docker_image:
+        name: "{{ DOCKER_REGISTRY_IP }}/w_bot/bot:latest"
         source: pull
-    
+      become: true   
+
     - name: Create container
-      community.general.docker_container:
+      community.docker.docker_container:
         name: "bot"
-        image: "nataboytsova/passbot12:latest"
+        image: "{{ DOCKER_REGISTRY_IP }}/w_bot/bot:latest"
         state: started
         recreate: yes
+      become: true
 
