@@ -11,7 +11,7 @@
 
     - name: Add host
       add_host:
-        name: w_bot
+        name: w_bot_bn
         groups: nodes
         ansible_host: "{{ trfrm.outputs.instance_ip_addr.value }}"
         ansible_ssh_private_key_file: ~/.ssh/id_rsa
@@ -29,13 +29,13 @@
   hosts: localhost
   connection: local
   tasks:
-    - name: Wait for w_bot port 22
+    - name: Wait for w_bot_bn port 22
       wait_for:
         host: "{{ trfrm.outputs.instance_ip_addr.value }}"
         port: 22
 
 - name: Deploy Application with docker
-  hosts: w_bot
+  hosts: w_bot_bn
   vars:
     daemon_json: "{{ daemon_conf | regex_replace('j2$', 'json') }}"
   tasks:
@@ -108,14 +108,14 @@
          
     - name: Pull Docker image
       community.docker.docker_image:
-        name: "{{ DOCKER_REGISTRY_IP }}/w_bot/bot:latest"
+        name: "{{ DOCKER_REGISTRY_IP }}/w_bot_bn/bot_bn:latest"
         source: pull
       become: true   
       
     - name: Create container
       community.docker.docker_container:
         name: "bot"
-        image: "{{ DOCKER_REGISTRY_IP }}/w_bot/bot:latest"
+        image: "{{ DOCKER_REGISTRY_IP }}/w_bot_bn/bot_bn:latest"
         state: started
         recreate: yes
       become: true
