@@ -1,5 +1,5 @@
 version: "3.9"
 services:
   bot:
-    image: {{ DOCKER_REGISTRY_IP }}/nataboytsova/passbot12
+    image: {{ DOCKER_REGISTRY_IP }}/w_bot/bot
     container_name: bot
