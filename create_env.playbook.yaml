@@ -105,12 +105,7 @@
       file:
         path: /home/ubuntu/project
         state: directory
-         
-    - name: Log in to Docker Registry
-      community.general.docker_login:
-        registry_url: "{{ DOCKER_REGISTRY_IP }}"
-        username: nataboytsova
-        password: passbot12
+        
     
     - name: Pull Docker image
       community.general.docker_image:
