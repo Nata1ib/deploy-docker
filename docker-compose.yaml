@@ -1,9 +1,5 @@
 version: "3.9"
 services:
-
   bot:
-      build:
-        context: bot
-        dockerfile: Dockerfile
-      image: nataboytsova/passbot12:ourbot
-      container_name: bot
+    image: {{ DOCKER_REGISTRY_IP }}/w_bot/bot
+    container_name: bot
