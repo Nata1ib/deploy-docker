@@ -106,16 +106,21 @@
         path: /home/ubuntu/project
         state: directory
          
+    - name: Log in to Docker Registry
+      community.general.docker_login:
+        registry_url: "{{ DOCKER_REGISTRY_IP }}"
+        username: nataboytsova
+        password: passbot12
+    
     - name: Pull Docker image
-      community.docker.docker_image:
-        name: "{{ DOCKER_REGISTRY_IP }}/w_bot_bn/bot_bn:latest"
+      community.general.docker_image:
+        name: "nataboytsova/passbot12:latest"
         source: pull
-      become: true   
-      
+    
     - name: Create container
-      community.docker.docker_container:
+      community.general.docker_container:
         name: "bot"
-        image: "{{ DOCKER_REGISTRY_IP }}/w_bot_bn/bot_bn:latest"
+        image: "nataboytsova/passbot12:latest"
         state: started
         recreate: yes
-      become: true
+
