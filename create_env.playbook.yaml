@@ -1,4 +1,4 @@
- name: run local terraform
+- name: run local terraform
   hosts: localhost
   connection: local
   tasks:
